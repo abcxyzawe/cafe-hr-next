@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate:
+    name: Build & validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cafe_hr
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d cafe_hr"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cafe_hr?schema=public
+      AUTH_SECRET: ci_dummy_secret_at_least_thirty_two_chars_long_for_validation
+      XAI_API_KEY: ""
+      XAI_IMAGE_MODEL: grok-imagine-image
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: cafe-hr-next/package-lock.json
+
+      - name: Install dependencies
+        working-directory: cafe-hr-next
+        run: npm ci
+
+      - name: Prisma generate
+        working-directory: cafe-hr-next
+        run: npx prisma generate
+
+      - name: Push schema to test DB
+        working-directory: cafe-hr-next
+        run: npx prisma db push --accept-data-loss --skip-generate
+
+      - name: Lint
+        working-directory: cafe-hr-next
+        run: npm run lint
+
+      - name: Build
+        working-directory: cafe-hr-next
+        run: npm run build

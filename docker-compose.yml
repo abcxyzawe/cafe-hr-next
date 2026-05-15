@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cafe-hr-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cafe_hr
+    ports:
+      - "5433:5432"
+    volumes:
+      - cafe_hr_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cafe_hr"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Optional: app container (use `docker compose --profile app up` to include)
+  app:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cafe-hr-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/cafe_hr?schema=public
+      XAI_API_KEY: ${XAI_API_KEY}
+      XAI_IMAGE_MODEL: ${XAI_IMAGE_MODEL:-grok-imagine-image}
+      AUTH_SECRET: ${AUTH_SECRET}
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    volumes:
+      - cafe_hr_avatars:/app/public/avatars
+    restart: unless-stopped
+
+volumes:
+  cafe_hr_pgdata:
+  cafe_hr_avatars:

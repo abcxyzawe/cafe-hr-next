@@ -1,26 +1,168 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Cafe-themed neutral palette — light */
+  --background: 36 33% 97%;          /* cream */
+  --foreground: 24 25% 12%;          /* dark espresso */
+  --card: 0 0% 100%;
+  --card-foreground: 24 25% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 24 25% 12%;
+  --primary: 24 60% 35%;             /* espresso brown */
+  --primary-foreground: 36 50% 97%;
+  --secondary: 32 30% 92%;           /* milk foam */
+  --secondary-foreground: 24 25% 18%;
+  --muted: 32 25% 94%;
+  --muted-foreground: 24 8% 42%;
+  --accent: 32 60% 88%;              /* latte */
+  --accent-foreground: 24 25% 18%;
+  --destructive: 0 72% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 28 18% 88%;
+  --input: 28 18% 88%;
+  --ring: 24 60% 45%;
+  --radius: 0.75rem;
+
+  --chart-1: 24 70% 45%;
+  --chart-2: 32 65% 55%;
+  --chart-3: 14 70% 50%;
+  --chart-4: 42 75% 55%;
+  --chart-5: 200 50% 45%;
+}
+
+.dark {
+  --background: 24 18% 8%;
+  --foreground: 36 30% 94%;
+  --card: 24 15% 11%;
+  --card-foreground: 36 30% 94%;
+  --popover: 24 15% 11%;
+  --popover-foreground: 36 30% 94%;
+  --primary: 32 70% 65%;             /* warm caramel */
+  --primary-foreground: 24 30% 14%;
+  --secondary: 24 12% 18%;
+  --secondary-foreground: 36 30% 94%;
+  --muted: 24 12% 16%;
+  --muted-foreground: 32 10% 65%;
+  --accent: 24 15% 22%;
+  --accent-foreground: 36 30% 94%;
+  --destructive: 0 65% 45%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 24 12% 22%;
+  --input: 24 12% 22%;
+  --ring: 32 70% 55%;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: hsl(var(--border));
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Soft scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+/* ---------------------------------------------------------------- */
+/* Density: compact mode tightens spacing ~12% across shadcn cards   */
+/* and shrinks body type slightly. Comfortable mode is the default.  */
+/* ---------------------------------------------------------------- */
+:where([data-density="compact"]) body {
+  font-size: 0.9375rem; /* 15px vs 16px — ~6% tighter */
+}
+
+/* Tighten shadcn Card padding: p-6 (1.5rem) -> 1rem */
+:where([data-density="compact"]) .p-6 {
+  padding: 1rem;
+}
+:where([data-density="compact"]) .p-6.pt-0 {
+  padding-top: 0;
+}
+
+/* Tighten the main content vertical rhythm */
+:where([data-density="compact"]) main {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+/* Slightly tighter default vertical gap on stacked sections */
+:where([data-density="compact"]) .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 1rem;
+}
+:where([data-density="compact"]) .gap-6 {
+  gap: 1rem;
+}
+
+/* Accessibility prefs (per-device, see src/lib/a11y-prefs.ts) */
+.a11y-reduce-motion *,
+.a11y-reduce-motion *::before,
+.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+.a11y-high-contrast {
+  --border: 24 18% 50%;
+  --input: 24 18% 50%;
+  --muted-foreground: 24 8% 28%;
+}
+.a11y-high-contrast.dark {
+  --border: 32 12% 70%;
+  --input: 32 12% 70%;
+  --muted-foreground: 32 12% 78%;
+}
+.a11y-high-contrast button,
+.a11y-high-contrast a {
+  outline-offset: 2px;
+}
+
+.a11y-large-touch button,
+.a11y-large-touch a[role="button"],
+.a11y-large-touch [role="switch"],
+.a11y-large-touch [role="checkbox"] {
+  min-height: 44px;
+  min-width: 44px;
 }

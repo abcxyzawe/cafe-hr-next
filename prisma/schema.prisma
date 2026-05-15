@@ -1,0 +1,215 @@
+// Cafe HR — Prisma schema
+// Database: PostgreSQL (use Neon / Supabase / local Docker)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  barista
+  server
+  cashier
+  manager
+}
+
+enum ShiftType {
+  morning
+  afternoon
+  evening
+}
+
+enum UserRole {
+  admin
+  staff
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  passwordHash String    @map("password_hash")
+  role         UserRole  @default(staff)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lastLoginAt  DateTime? @map("last_login_at")
+
+  activities   ActivityLog[]
+
+  @@map("users")
+}
+
+model ActivityLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int?     @map("user_id")
+  action     String   // e.g. "employee.create", "shift.delete", "user.login"
+  entityType String?  @map("entity_type") // "employee", "shift", ...
+  entityId   Int?     @map("entity_id")
+  summary    String   // human-readable description in Vietnamese
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("activity_logs")
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
+
+model Employee {
+  id          Int          @id @default(autoincrement())
+  name        String
+  role        Role
+  phone       String?
+  email       String?      @unique
+  hourlyRate  Decimal      @default(30000) @db.Decimal(12, 2) @map("hourly_rate")
+  avatarUrl   String?      @map("avatar_url")
+  dateOfBirth DateTime?    @map("date_of_birth") @db.Date
+  pinHash     String?      @map("pin_hash")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  shifts        Shift[]
+  attendance    Attendance[]
+  payroll       Payroll[]
+  notes         EmployeeNote[]
+  leaveRequests LeaveRequest[]
+  tasks         Task[]
+
+  @@map("employees")
+  @@index([role])
+}
+
+enum LeaveType {
+  annual
+  sick
+  personal
+  unpaid
+}
+
+enum LeaveStatus {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
+enum TaskPriority {
+  low
+  normal
+  high
+  urgent
+}
+
+model DailyQuote {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique @db.Date
+  content   String   @db.Text
+  model     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("daily_quotes")
+}
+
+model Task {
+  id              Int          @id @default(autoincrement())
+  title           String
+  description     String?      @db.Text
+  assigneeId      Int          @map("assignee_id")
+  priority        TaskPriority @default(normal)
+  dueDate         DateTime?    @map("due_date") @db.Date
+  completedAt     DateTime?    @map("completed_at")
+  completedByName String?      @map("completed_by_name")
+  createdById     Int?         @map("created_by_id")
+  createdByName   String?      @map("created_by_name")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  assignee        Employee     @relation(fields: [assigneeId], references: [id], onDelete: Cascade)
+
+  @@map("tasks")
+  @@index([assigneeId])
+  @@index([completedAt])
+  @@index([dueDate])
+}
+
+model LeaveRequest {
+  id          Int         @id @default(autoincrement())
+  employeeId  Int         @map("employee_id")
+  type        LeaveType
+  startDate   DateTime    @map("start_date") @db.Date
+  endDate     DateTime    @map("end_date") @db.Date
+  reason      String?     @db.Text
+  status      LeaveStatus @default(pending)
+  decidedAt   DateTime?   @map("decided_at")
+  decidedById Int?        @map("decided_by_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  employee    Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("leave_requests")
+  @@index([employeeId])
+  @@index([status, startDate])
+}
+
+model EmployeeNote {
+  id         Int      @id @default(autoincrement())
+  employeeId Int      @map("employee_id")
+  authorId   Int?     @map("author_id")
+  authorName String   @map("author_name")
+  content    String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_notes")
+  @@index([employeeId, createdAt])
+}
+
+model Shift {
+  id         Int        @id @default(autoincrement())
+  employeeId Int        @map("employee_id")
+  shiftDate  DateTime   @map("shift_date") @db.Date
+  shiftType  ShiftType? @map("shift_type")
+  startTime  String?    @map("start_time")
+  endTime    String?    @map("end_time")
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  employee   Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("shifts")
+  @@index([shiftDate])
+  @@index([employeeId, shiftDate])
+}
+
+model Attendance {
+  id           Int       @id @default(autoincrement())
+  employeeId   Int       @map("employee_id")
+  checkIn      DateTime  @map("check_in")
+  checkOut     DateTime? @map("check_out")
+  hoursWorked  Decimal?  @map("hours_worked") @db.Decimal(8, 2)
+
+  employee     Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("attendance")
+  @@index([employeeId, checkIn])
+}
+
+model Payroll {
+  id          Int      @id @default(autoincrement())
+  employeeId  Int      @map("employee_id")
+  period      String   // YYYY-MM
+  totalHours  Decimal  @map("total_hours") @db.Decimal(10, 2)
+  totalPay    Decimal  @map("total_pay") @db.Decimal(14, 2)
+  generatedAt DateTime @default(now()) @map("generated_at")
+
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, period])
+  @@map("payroll")
+  @@index([period])
+}
