@@ -232,7 +232,7 @@ export default async function WellnessTrendsBoardPage({
             />
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Chỉ số sức khỏe tuần này
+                Điểm vận hành tuần này
               </p>
               <p className="text-4xl font-bold leading-none tabular-nums text-foreground">
                 {latest ? Math.round(latest.wellnessIndex) : "—"}
@@ -283,7 +283,7 @@ export default async function WellnessTrendsBoardPage({
           />
           <div className="min-w-0 flex-1">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Chỉ số sức khỏe
+              Chỉ số vận hành
             </p>
             <p className="mt-1 text-2xl font-bold tabular-nums">
               {latest ? Math.round(latest.wellnessIndex) : "—"}
@@ -416,7 +416,7 @@ export default async function WellnessTrendsBoardPage({
             stroke="rgb(59 130 246)"
           />
           <ChartRow
-            label="Chỉ số sức khỏe"
+            label="Chỉ số vận hành"
             unit="/ 100"
             values={sparklines.wellnessIndex}
             stats={wellnessStats}
@@ -447,7 +447,7 @@ export default async function WellnessTrendsBoardPage({
                 <th className="px-2 py-2 text-right font-medium">
                   Tan ca muộn
                 </th>
-                <th className="px-2 py-2 text-right font-medium">Wellness</th>
+                <th className="px-2 py-2 text-right font-medium">Vận hành</th>
               </tr>
             </thead>
             <tbody className="tabular-nums">

@@ -173,7 +173,7 @@ export function Sidebar({
       ? [
           { href: "/admin/insights", label: "Trung tâm phân tích", icon: Gauge },
           { href: "/admin/dashboard-v2", label: "Bảng điều khiển v2", icon: LayoutDashboard },
-          { href: "/burnout-board", label: "Cảnh báo kiệt sức", icon: AlertTriangle },
+          { href: "/burnout-board", label: "Cảnh báo quá tải", icon: AlertTriangle },
           { href: "/team-pulse-board", label: "Khả năng vận hành", icon: Heart },
           { href: "/wellness-trends-board", label: "Xu hướng vận hành", icon: Activity },
           { href: "/leaderboard", label: "Bảng xếp hạng", icon: Trophy },

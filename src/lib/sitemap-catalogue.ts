@@ -1018,8 +1018,8 @@ export const SITEMAP_ENTRIES: ReadonlyArray<SitemapEntry> = [
   // ---------- Phân tích (boards mới) ----------
   {
     href: "/burnout-board",
-    label: "Cảnh báo kiệt sức",
-    description: "Đánh giá rủi ro burnout 30 ngày.",
+    label: "Cảnh báo quá tải vận hành",
+    description: "Đánh giá rủi ro quá tải 30 ngày.",
     iconName: "flame",
     category: "analytics",
     adminOnly: true,

@@ -400,7 +400,7 @@ export default async function TasksForecastBoardPage({
               <HealthScore score={summary.healthScore} size="lg" />
               <div className="text-xs">
                 <div className="text-muted-foreground uppercase tracking-wide">
-                  Sức khỏe
+                  Vận hành
                 </div>
                 <div className="font-semibold">Điểm tổng</div>
               </div>
@@ -522,7 +522,7 @@ export default async function TasksForecastBoardPage({
           <Zap className="size-3.5" />
           Dự báo dựa trên vận tốc lịch sử 60 ngày của từng người được giao.
           <CalendarClock className="size-3.5 ml-auto" />
-          Mức điểm sức khỏe = 100 − (quá hạn × 5 + rủi ro × 2).
+          Mức điểm vận hành = 100 − (quá hạn × 5 + rủi ro × 2).
         </CardContent>
       </Card>
     </div>

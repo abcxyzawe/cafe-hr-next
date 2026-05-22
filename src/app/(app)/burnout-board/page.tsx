@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Cảnh báo kiệt sức — Cafe HR",
+  title: "Cảnh báo quá tải vận hành — Cafe HR",
 };
 
 type RiskLevel = "low" | "medium" | "high";
@@ -170,7 +170,7 @@ export default async function BurnoutBoardPage({
         <EmptyState
           icon={<RefreshCw style={{ width: 36, height: 36 }} />}
           title="Không tải được dữ liệu"
-          description="Không thể lấy dữ liệu cảnh báo kiệt sức. Vui lòng thử lại."
+          description="Không thể lấy dữ liệu cảnh báo quá tải. Vui lòng thử lại."
           action={
             <Link
               href="/burnout-board"
@@ -294,12 +294,12 @@ function Header() {
             <AlertTriangle className="size-3" /> Cảnh báo nội bộ
           </span>
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-foreground md:text-4xl">
-            Cảnh báo kiệt sức
+            Cảnh báo quá tải vận hành
           </h1>
           <p className="max-w-2xl text-sm text-muted-foreground md:text-base">
-            Theo dõi sức khỏe lao động của toàn quán dựa trên 30 ngày dữ liệu
-            chấm công. Mỗi nhân viên được chấm điểm rủi ro từ 0–100 dựa trên
-            chuỗi ngày làm liên tục, tổng giờ, ca khuya và lịch nghỉ phép.
+            Theo dõi tải vận hành của toàn quán dựa trên 30 ngày dữ liệu chấm
+            công. Mỗi nhân viên được chấm điểm rủi ro từ 0–100 dựa trên chuỗi
+            ngày làm liên tục, tổng giờ, ca khuya và lịch nghỉ phép.
           </p>
         </div>
         <div className="hidden shrink-0 items-center gap-2 rounded-xl border bg-white/70 px-4 py-3 text-xs text-muted-foreground shadow-sm backdrop-blur dark:bg-background/60 md:flex">

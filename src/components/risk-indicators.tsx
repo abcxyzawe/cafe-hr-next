@@ -341,7 +341,7 @@ export function HealthScore({
       aria-valuenow={Math.round(score)}
       aria-valuemin={0}
       aria-valuemax={max}
-      aria-label="Điểm sức khỏe"
+      aria-label="Điểm vận hành"
     >
       <svg
         width={dim}

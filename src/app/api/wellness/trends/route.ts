@@ -253,11 +253,11 @@ export async function GET(req: Request) {
     if (latest && prior) {
       if (latest.wellnessIndex > prior.wellnessIndex + 5) {
         insights.push(
-          `Chỉ số sức khỏe tăng ${deltas.wellnessVsPrior} điểm so với tuần trước — đà tích cực.`,
+          `Chỉ số vận hành tăng ${deltas.wellnessVsPrior} điểm so với tuần trước — đà tích cực.`,
         );
       } else if (latest.wellnessIndex < prior.wellnessIndex - 5) {
         insights.push(
-          `Chỉ số sức khỏe giảm ${Math.abs(deltas.wellnessVsPrior)} điểm — cần lưu ý chăm sóc đội ngũ.`,
+          `Chỉ số vận hành giảm ${Math.abs(deltas.wellnessVsPrior)} điểm — cần can thiệp để giữ ổn định.`,
         );
       }
       if (deltas.kudosVsPrior >= 3) {
@@ -280,7 +280,7 @@ export async function GET(req: Request) {
         latest.totalHours / latest.uniqueEmployees > 50
       ) {
         insights.push(
-          `Trung bình ${Math.round((latest.totalHours / latest.uniqueEmployees) * 10) / 10} giờ/người — vùng nguy cơ kiệt sức.`,
+          `Trung bình ${Math.round((latest.totalHours / latest.uniqueEmployees) * 10) / 10} giờ/người — vùng nguy cơ quá tải.`,
         );
       }
     }

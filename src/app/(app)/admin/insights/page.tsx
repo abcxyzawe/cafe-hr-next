@@ -253,9 +253,9 @@ function pulseLevelClass(level: PulseLevel): string {
 }
 
 function pulseLevelLabel(level: PulseLevel): string {
-  if (level === "high") return "Khỏe mạnh";
+  if (level === "high") return "Vận hành tốt";
   if (level === "medium") return "Ổn định";
-  return "Cần chú ý";
+  return "Cần can thiệp";
 }
 
 function formatDateVi(iso: string): string {
@@ -316,7 +316,7 @@ export default async function AdminInsightsPage() {
           <NavPill
             href="/burnout-board"
             icon={<Flame className="size-3.5" />}
-            label="Cảnh báo kiệt sức"
+            label="Cảnh báo quá tải"
           />
           <NavPill
             href="/team-pulse-board"
@@ -357,7 +357,7 @@ export default async function AdminInsightsPage() {
 
       {/* Section 2: Burnout */}
       <SectionCard
-        title="Cảnh báo kiệt sức"
+        title="Cảnh báo quá tải vận hành"
         icon={<Flame className="size-5 text-orange-500" />}
         href="/burnout-board"
       >
@@ -368,7 +368,7 @@ export default async function AdminInsightsPage() {
             variant="subtle"
             size="sm"
             icon={<AlertTriangle style={{ width: 28, height: 28 }} />}
-            title="Không tải được số liệu Burnout"
+            title="Không tải được số liệu quá tải"
             description={burnoutResult.message}
           />
         )}
