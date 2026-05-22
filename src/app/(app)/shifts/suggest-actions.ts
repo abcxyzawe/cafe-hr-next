@@ -15,7 +15,10 @@ const SHIFT_DEFAULT_TIMES: Record<string, [string, string]> = {
   evening: ["17:00", "22:00"],
 };
 
-export async function fetchSuggestions(weekStartIso: string): Promise<{
+export async function fetchSuggestions(
+  weekStartIso: string,
+  extraContext?: string,
+): Promise<{
   ok: boolean;
   suggestions?: SuggestedShift[];
   source?: "grok" | "fallback";
@@ -26,7 +29,7 @@ export async function fetchSuggestions(weekStartIso: string): Promise<{
     return { ok: false, error: "Chỉ admin được phép" };
   }
   try {
-    const result = await suggestWeekSchedule(weekStartIso);
+    const result = await suggestWeekSchedule(weekStartIso, extraContext);
     return {
       ok: true,
       suggestions: result.suggestions,

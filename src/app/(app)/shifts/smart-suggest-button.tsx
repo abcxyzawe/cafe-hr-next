@@ -58,26 +58,34 @@ export function SmartSuggestButton({ weekStart }: { weekStart: string }) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [removed, setRemoved] = useState<Set<number>>(new Set());
   const [source, setSource] = useState<"grok" | "fallback" | null>(null);
+  const [context, setContext] = useState("");
   const [applying, startApply] = useTransition();
 
-  async function openAndFetch() {
+  function openDialog() {
     setOpen(true);
+    setSuggestions([]);
+    setRemoved(new Set());
+    setSource(null);
+  }
+
+  async function runFetch() {
     setLoading(true);
     setSuggestions([]);
     setRemoved(new Set());
     setSource(null);
     try {
-      const res = await fetchSuggestions(weekStart);
+      const res = await fetchSuggestions(weekStart, context);
       if (res.ok && res.suggestions) {
         setSuggestions(res.suggestions);
         setSource(res.source ?? null);
+        if (res.suggestions.length === 0) {
+          toast.info("Không có ca nào được đề xuất");
+        }
       } else {
         toast.error(res.error || "Không tạo được đề xuất");
-        setOpen(false);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Lỗi");
-      setOpen(false);
     } finally {
       setLoading(false);
     }
@@ -125,7 +133,7 @@ export function SmartSuggestButton({ weekStart }: { weekStart: string }) {
       <Button
         variant="outline"
         size="sm"
-        onClick={openAndFetch}
+        onClick={openDialog}
         className="gap-1.5"
       >
         <Sparkles className="size-4 text-primary" />
@@ -141,11 +149,49 @@ export function SmartSuggestButton({ weekStart }: { weekStart: string }) {
             <DialogDescription>
               {loading
                 ? "Đang phân tích pattern 4 tuần qua..."
-                : source === "grok"
-                  ? "Phân tích từ pattern thực tế của đội ngũ — bạn có thể bỏ ca nào không phù hợp trước khi áp dụng."
-                  : "Đề xuất tự động luân phiên (do dịch vụ AI tạm không khả dụng)."}
+                : suggestions.length === 0
+                  ? "Nhập ghi chú (part-time, ai bận ngày nào, yêu cầu riêng) rồi bấm Tạo đề xuất. AI sẽ tự động đọc ngày nghỉ phép từ DB."
+                  : source === "grok"
+                    ? "Phân tích từ pattern thực tế + ngày nghỉ phép + ghi chú của bạn. Bỏ ca không phù hợp trước khi áp dụng."
+                    : "Đề xuất tự động luân phiên (do dịch vụ AI tạm không khả dụng)."}
             </DialogDescription>
           </DialogHeader>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="suggest-context"
+              className="text-sm font-medium"
+            >
+              Ghi chú cho AI (tuỳ chọn)
+            </label>
+            <textarea
+              id="suggest-context"
+              value={context}
+              onChange={(e) => setContext(e.target.value.slice(0, 2000))}
+              disabled={loading}
+              placeholder={
+                "Ví dụ:\n- Lan part-time, chỉ rảnh sáng T2-T4\n- Minh bận T7 sau 17h\n- Tuần này cần 2 barista ca tối\n- Ưu tiên Hà ca sáng vì ở gần"
+              }
+              rows={5}
+              className="w-full resize-y rounded-md border bg-background px-3 py-2 text-sm leading-relaxed shadow-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
+            />
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>{context.length}/2000</span>
+              <Button
+                size="sm"
+                onClick={runFetch}
+                disabled={loading}
+                className="gap-1.5"
+              >
+                {loading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                {suggestions.length === 0 ? "Tạo đề xuất" : "Tạo lại"}
+              </Button>
+            </div>
+          </div>
 
           {loading ? (
             <div className="flex flex-col items-center gap-3 py-12">
@@ -154,11 +200,7 @@ export function SmartSuggestButton({ weekStart }: { weekStart: string }) {
                 Tính toán đề xuất, đợi 5-10 giây...
               </p>
             </div>
-          ) : suggestions.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Chưa có đề xuất
-            </p>
-          ) : (
+          ) : suggestions.length === 0 ? null : (
             <>
               <div className="max-h-[55vh] overflow-y-auto">
                 <div className="grid gap-3">

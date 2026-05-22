@@ -14,7 +14,16 @@ const PUBLIC_PATHS = [
   "/api/shifts/template.csv",
   "/api/kiosk/stream",
 ];
-const PUBLIC_PREFIXES = ["/_next", "/brand", "/assets", "/avatars", "/manifest.webmanifest", "/favicon"];
+const PUBLIC_PREFIXES = [
+  "/_next",
+  "/brand",
+  "/assets",
+  "/avatars",
+  "/illustrations",
+  "/manifest.webmanifest",
+  "/favicon",
+  "/sw.js",
+];
 
 function isPublic(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true;

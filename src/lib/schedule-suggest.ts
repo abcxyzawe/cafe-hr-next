@@ -18,7 +18,10 @@ const WEEKDAYS_VI = ["Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5",
  * Build a 7-day shift schedule suggestion using historical patterns.
  * Falls back to a deterministic round-robin if Grok is unavailable.
  */
-export async function suggestWeekSchedule(weekStartIso: string): Promise<{
+export async function suggestWeekSchedule(
+  weekStartIso: string,
+  extraContext?: string,
+): Promise<{
   suggestions: SuggestedShift[];
   source: "grok" | "fallback";
   signals: string;
@@ -34,7 +37,10 @@ export async function suggestWeekSchedule(weekStartIso: string): Promise<{
   const fourWeeksAgo = new Date(weekStart);
   fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
 
-  const [employees, recentShifts] = await Promise.all([
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+
+  const [employees, recentShifts, weekShifts, leaves] = await Promise.all([
     prisma.employee.findMany({
       orderBy: { id: "asc" },
       select: { id: true, name: true, role: true },
@@ -42,6 +48,24 @@ export async function suggestWeekSchedule(weekStartIso: string): Promise<{
     prisma.shift.findMany({
       where: { shiftDate: { gte: fourWeeksAgo, lt: weekStart } },
       select: { employeeId: true, shiftType: true, shiftDate: true },
+    }),
+    prisma.shift.findMany({
+      where: { shiftDate: { gte: weekStart, lt: weekEnd } },
+      select: { employeeId: true, shiftType: true, shiftDate: true },
+    }),
+    prisma.leaveRequest.findMany({
+      where: {
+        status: { in: ["approved", "pending"] },
+        startDate: { lt: weekEnd },
+        endDate: { gte: weekStart },
+      },
+      select: {
+        employeeId: true,
+        type: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+      },
     }),
   ]);
 
@@ -90,6 +114,52 @@ export async function suggestWeekSchedule(weekStartIso: string): Promise<{
     return d.toISOString().slice(0, 10);
   });
 
+  // Per-employee per-date "busy" set (on leave) — blocks that whole day
+  const busyByEmp = new Map<number, Set<string>>();
+  for (const e of employees) busyByEmp.set(e.id, new Set());
+  for (const l of leaves) {
+    const set = busyByEmp.get(l.employeeId);
+    if (!set) continue;
+    for (const iso of weekDates) {
+      const d = new Date(iso);
+      if (d >= l.startDate && d <= l.endDate) set.add(iso);
+    }
+  }
+
+  // Existing shifts in target week — skip duplicates and surface as context
+  const existingKey = (eId: number, iso: string, st: string) =>
+    `${eId}__${iso}__${st}`;
+  const existingShiftKeys = new Set<string>();
+  for (const s of weekShifts) {
+    if (!s.shiftType) continue;
+    existingShiftKeys.add(
+      existingKey(s.employeeId, s.shiftDate.toISOString().slice(0, 10), s.shiftType),
+    );
+  }
+
+  const leaveLines = leaves.length
+    ? leaves
+        .map((l) => {
+          const e = employees.find((x) => x.id === l.employeeId);
+          const name = e?.name ?? `#${l.employeeId}`;
+          const from = l.startDate.toISOString().slice(0, 10);
+          const to = l.endDate.toISOString().slice(0, 10);
+          return `- ${name}: nghỉ ${l.type} ${from}→${to} (${l.status})`;
+        })
+        .join("\n")
+    : "- Không có ai xin nghỉ trong tuần này";
+
+  const existingShiftLines = weekShifts.length
+    ? weekShifts
+        .map((s) => {
+          const e = employees.find((x) => x.id === s.employeeId);
+          const name = e?.name ?? `#${s.employeeId}`;
+          const iso = s.shiftDate.toISOString().slice(0, 10);
+          return `- ${iso} ${s.shiftType}: ${name}`;
+        })
+        .join("\n")
+    : "- Tuần này chưa có ca nào";
+
   const employeeSummaryForPrompt = employees
     .map((e) => `#${e.id} ${e.name} (${e.role})`)
     .join(", ");
@@ -119,6 +189,9 @@ export async function suggestWeekSchedule(weekStartIso: string): Promise<{
             "2) Mỗi nhân viên không quá 2 ca/ngày. " +
             "3) Phân bố đều, ưu tiên ca mà nhân viên hay làm. " +
             "4) Mỗi nhân viên có ít nhất 1 ngày nghỉ trong tuần. " +
+            "5) TUYỆT ĐỐI KHÔNG xếp ca cho nhân viên trong ngày họ đã xin nghỉ phép. " +
+            "6) KHÔNG trùng ca đã tồn tại (cùng employeeId + date + shiftType). " +
+            "7) TÔN TRỌNG TUYỆT ĐỐI 'Ghi chú từ quản lý' (part-time, khung giờ rảnh, người bận, yêu cầu riêng) — đây là chỉ thị cao nhất, ưu tiên hơn pattern. " +
             "Trả về JSON, KHÔNG markdown.",
         },
         {
@@ -127,6 +200,11 @@ export async function suggestWeekSchedule(weekStartIso: string): Promise<{
             `Xếp lịch 7 ngày từ ${dateLabels}.\n\n` +
             `Nhân viên (id, tên, vai trò): ${employeeSummaryForPrompt}\n\n` +
             `Pattern 4 tuần qua:\n${signalsText}\n\n` +
+            `Nghỉ phép trong tuần:\n${leaveLines}\n\n` +
+            `Ca đã xếp sẵn trong tuần (bổ sung, không trùng):\n${existingShiftLines}\n\n` +
+            (extraContext && extraContext.trim()
+              ? `Ghi chú từ quản lý (ràng buộc bắt buộc):\n${extraContext.trim().slice(0, 2000)}\n\n`
+              : "") +
             `Mỗi ngày có 3 ca: sáng (07-12), chiều (12-17), tối (17-22). ` +
             `Trả về JSON đúng format.`,
         },
@@ -171,6 +249,8 @@ export async function suggestWeekSchedule(weekStartIso: string): Promise<{
             ) {
               continue;
             }
+            if (busyByEmp.get(employeeId)?.has(date)) continue;
+            if (existingShiftKeys.has(existingKey(employeeId, date, shiftType))) continue;
             suggestions.push({
               employeeId,
               employeeName: empById.get(employeeId)!,
@@ -189,19 +269,29 @@ export async function suggestWeekSchedule(weekStartIso: string): Promise<{
     }
   }
 
-  // Deterministic fallback: simple round-robin
+  // Deterministic fallback: round-robin, but skip employees on leave that day
+  // and skip slots already filled.
   const fallback: SuggestedShift[] = [];
   let idx = 0;
   for (const date of weekDates) {
     for (const shiftType of SHIFT_TYPES) {
-      const emp = employees[idx % employees.length];
-      idx++;
+      // find next employee not on leave that day and not already on this slot
+      let picked: (typeof employees)[number] | null = null;
+      for (let tried = 0; tried < employees.length; tried++) {
+        const cand = employees[(idx + tried) % employees.length];
+        if (busyByEmp.get(cand.id)?.has(date)) continue;
+        if (existingShiftKeys.has(existingKey(cand.id, date, shiftType))) continue;
+        picked = cand;
+        idx = (idx + tried + 1) % employees.length;
+        break;
+      }
+      if (!picked) continue;
       fallback.push({
-        employeeId: emp.id,
-        employeeName: emp.name,
+        employeeId: picked.id,
+        employeeName: picked.name,
         date,
         shiftType,
-        rationale: "Xếp tự động luân phiên",
+        rationale: "Xếp tự động luân phiên (đã tránh nghỉ phép)",
       });
     }
   }

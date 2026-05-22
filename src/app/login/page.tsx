@@ -24,7 +24,7 @@ export default async function LoginPage({
   ];
 
   return (
-    <div className="flex min-h-svh bg-background">
+    <div className="flex min-h-svh w-full flex-1 bg-background">
       {/* LEFT pane: branded hero */}
       <div
         className="relative hidden md:flex md:flex-1 bg-cover bg-center"
@@ -83,7 +83,7 @@ export default async function LoginPage({
       </div>
 
       {/* RIGHT pane: login form */}
-      <div className="flex w-full md:max-w-md md:flex-shrink-0 items-center justify-center p-6 sm:p-8 lg:p-12">
+      <div className="flex w-full md:flex-1 items-center justify-center p-6 sm:p-8 lg:p-12">
         <div className="w-full max-w-sm space-y-6">
           {/* Mobile-only logo (left pane is hidden on mobile) */}
           <div className="flex flex-col items-center gap-2 text-center md:hidden">
