@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import {
   Activity,
   AlertTriangle,
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
   Award,
   CalendarOff,
   CheckCircle2,
@@ -14,6 +17,7 @@ import {
   TrendingDown,
   TrendingUp,
   Trophy,
+  UserX,
   Users,
 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
@@ -32,13 +36,18 @@ type RoleEntry = {
   headcount: number;
   activeToday: number;
   avgHoursPerEmployeeLast30: number;
+  expectedHoursPerEmployee: number;
   kudosLast30: number;
   tasksCompletedLast30: number;
   tasksOverdueOpen: number;
   approvedLeavesLast30: number;
   lateCheckoutCount30: number;
+  scheduledShifts30: number;
+  noShows30: number;
   pulseScore: number;
   pulseLevel: PulseLevel;
+  pulsePrev: number | null;
+  pulseDelta: number | null;
   narrative: string;
 };
 
@@ -51,6 +60,8 @@ type KudosLeader = {
 
 type OverallSummary = {
   pulse: number;
+  pulsePrev: number | null;
+  pulseDelta: number | null;
   level: PulseLevel;
   totalEmployees: number;
   narrative: string;
@@ -163,6 +174,43 @@ function formatGeneratedAt(iso: string): string {
   });
 }
 
+function TrendBadge({
+  delta,
+}: {
+  delta: number | null;
+}): React.ReactElement | null {
+  if (delta == null) return null;
+  const abs = Math.abs(delta);
+  if (abs < 1) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/20 bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+        <ArrowRight className="size-3" />
+        ổn định
+      </span>
+    );
+  }
+  const up = delta > 0;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold tabular-nums",
+        up
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300"
+          : "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300",
+      )}
+      title="So với 30 ngày trước"
+    >
+      {up ? (
+        <ArrowUpRight className="size-3" />
+      ) : (
+        <ArrowDownRight className="size-3" />
+      )}
+      {up ? "+" : "−"}
+      {abs}
+    </span>
+  );
+}
+
 function PulseBar({
   score,
   level,
@@ -258,7 +306,10 @@ function RoleCard({ entry }: { entry: RoleEntry }): React.ReactElement {
             Vai trò trong đội ngũ
           </p>
         </div>
-        <HealthScore score={entry.pulseScore} size="md" />
+        <div className="flex flex-col items-end gap-1.5">
+          <HealthScore score={entry.pulseScore} size="md" />
+          <TrendBadge delta={entry.pulseDelta} />
+        </div>
       </header>
 
       <div className="flex items-end justify-between rounded-xl bg-gradient-to-br from-sky-50 to-cyan-50 px-3 py-2 dark:from-sky-950/30 dark:to-cyan-950/30">
@@ -286,12 +337,18 @@ function RoleCard({ entry }: { entry: RoleEntry }): React.ReactElement {
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        <RoleStat
-          icon={Clock}
-          label="Giờ TB / NV"
-          value={entry.avgHoursPerEmployeeLast30}
-          decimals={1}
-        />
+        <div className="rounded-md border border-border/70 bg-muted/30 p-2">
+          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+            <Clock className="size-3" aria-hidden />
+            <span className="truncate">Giờ TB / kỳ vọng</span>
+          </div>
+          <div className="mt-0.5 text-base font-bold leading-tight tabular-nums text-foreground">
+            {entry.avgHoursPerEmployeeLast30}
+            <span className="text-xs font-medium text-muted-foreground">
+              /{entry.expectedHoursPerEmployee}h
+            </span>
+          </div>
+        </div>
         <RoleStat
           icon={Heart}
           label="Kudos"
@@ -310,11 +367,25 @@ function RoleCard({ entry }: { entry: RoleEntry }): React.ReactElement {
           value={entry.tasksOverdueOpen}
           emphasis={entry.tasksOverdueOpen > 0 ? "bad" : "default"}
         />
-        <RoleStat
-          icon={CalendarOff}
-          label="Đơn nghỉ"
-          value={entry.approvedLeavesLast30}
-        />
+        <div className="rounded-md border border-border/70 bg-muted/30 p-2">
+          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+            <UserX className="size-3" aria-hidden />
+            <span className="truncate">No-show</span>
+          </div>
+          <div
+            className={cn(
+              "mt-0.5 text-base font-bold leading-tight tabular-nums",
+              entry.noShows30 > 0
+                ? "text-red-600 dark:text-red-400"
+                : "text-foreground",
+            )}
+          >
+            {entry.noShows30}
+            <span className="text-xs font-medium text-muted-foreground">
+              /{entry.scheduledShifts30}
+            </span>
+          </div>
+        </div>
         <RoleStat
           icon={Moon}
           label="Tan ca muộn"
@@ -322,6 +393,13 @@ function RoleCard({ entry }: { entry: RoleEntry }): React.ReactElement {
           emphasis={entry.lateCheckoutCount30 > 0 ? "warn" : "default"}
         />
       </div>
+
+      {entry.approvedLeavesLast30 > 0 ? (
+        <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <CalendarOff className="size-3" aria-hidden />
+          {entry.approvedLeavesLast30} ngày nghỉ đã duyệt trong 30 ngày
+        </p>
+      ) : null}
 
       <PulseBar score={entry.pulseScore} level={entry.pulseLevel} />
 
@@ -415,6 +493,7 @@ export default async function TeamPulseBoardPage(): Promise<React.ReactElement> 
                 />
                 {levelLabelVi(overall.level)}
               </span>
+              <TrendBadge delta={overall.pulseDelta} />
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">
               {overall.narrative}
