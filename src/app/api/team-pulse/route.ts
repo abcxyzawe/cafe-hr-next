@@ -109,9 +109,9 @@ function roleLabelVi(role: RoleKey): string {
   }
 }
 function levelLabelVi(level: PulseLevel): string {
-  if (level === "high") return "khỏe mạnh";
-  if (level === "medium") return "ổn định";
-  return "cần chú ý";
+  if (level === "high") return "vận hành tốt";
+  if (level === "medium") return "vận hành ổn định";
+  return "cần can thiệp";
 }
 function errMsg(e: unknown): string {
   return e instanceof Error ? e.message.slice(0, 300) : String(e).slice(0, 300);
@@ -209,7 +209,7 @@ function buildRoleNarrative(entry: RoleEntry): string {
         : entry.pulseDelta < 0
           ? `, giảm ${Math.abs(entry.pulseDelta)} so với 30 ngày trước`
           : "";
-  return `Nhóm ${roleVi} đang ${lvl} (điểm ${entry.pulseScore}/100${trendNote}): ${entry.activeToday}/${entry.headcount} đi làm hôm nay (${activeRatio}%), trung bình ${entry.avgHoursPerEmployeeLast30}/${entry.expectedHoursPerEmployee} giờ kỳ vọng${noShowNote}, ${entry.kudosLast30} lời khen, hoàn thành ${entry.tasksCompletedLast30} việc, còn ${entry.tasksOverdueOpen} việc quá hạn.`;
+  return `Nhóm ${roleVi} ${lvl} (điểm vận hành ${entry.pulseScore}/100${trendNote}): ${entry.activeToday}/${entry.headcount} đi làm hôm nay (${activeRatio}%), trung bình ${entry.avgHoursPerEmployeeLast30}/${entry.expectedHoursPerEmployee} giờ kỳ vọng${noShowNote}, ${entry.kudosLast30} lời khen, hoàn thành ${entry.tasksCompletedLast30} việc, còn ${entry.tasksOverdueOpen} việc quá hạn.`;
 }
 
 function buildOverallNarrative(
@@ -230,7 +230,7 @@ function buildOverallNarrative(
     else trend = " (không đổi)";
   }
   parts.push(
-    `Toàn đội ngũ ${total} nhân viên đang ${lvl} với điểm pulse ${pulse}/100${trend}.`,
+    `Toàn đội ngũ ${total} nhân viên đang ${lvl} với điểm vận hành ${pulse}/100${trend}.`,
   );
   if (best) parts.push(`Nhóm tốt nhất: ${roleLabelVi(best.role)} (${best.pulse}/100).`);
   if (worst && (!best || worst.role !== best.role)) {

@@ -321,7 +321,7 @@ export default async function AdminInsightsPage() {
           <NavPill
             href="/team-pulse-board"
             icon={<HeartPulse className="size-3.5" />}
-            label="Sức khỏe đội"
+            label="Khả năng vận hành"
           />
           <NavPill
             href="/anniversaries-board"
@@ -338,7 +338,7 @@ export default async function AdminInsightsPage() {
 
       {/* Section 1: Team pulse */}
       <SectionCard
-        title="Sức khỏe đội ngũ"
+        title="Khả năng vận hành đội ngũ"
         icon={<HeartPulse className="size-5 text-rose-500" />}
         href="/team-pulse-board"
       >
@@ -349,7 +349,7 @@ export default async function AdminInsightsPage() {
             variant="subtle"
             size="sm"
             icon={<AlertTriangle style={{ width: 28, height: 28 }} />}
-            title="Không tải được số liệu Team Pulse"
+            title="Không tải được số liệu vận hành"
             description={pulseResult.message}
           />
         )}

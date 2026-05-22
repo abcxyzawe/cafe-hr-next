@@ -134,7 +134,7 @@ export const SITEMAP_CATEGORY_META: Record<
   },
   team: {
     label: "Đội ngũ",
-    description: "Bảng xếp hạng, kỷ niệm gắn bó và sức khoẻ đội ngũ.",
+    description: "Bảng xếp hạng, kỷ niệm gắn bó và khả năng vận hành đội ngũ.",
   },
   personal: {
     label: "Cá nhân",
@@ -1026,8 +1026,8 @@ export const SITEMAP_ENTRIES: ReadonlyArray<SitemapEntry> = [
   },
   {
     href: "/team-pulse-board",
-    label: "Sức khỏe đội ngũ",
-    description: "Pulse score theo vai trò.",
+    label: "Khả năng vận hành đội ngũ",
+    description: "Điểm vận hành theo vai trò.",
     iconName: "heart",
     category: "analytics",
     adminOnly: true,

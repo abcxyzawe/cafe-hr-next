@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Xu hướng sức khỏe đội ngũ — Cafe HR",
+  title: "Xu hướng vận hành đội ngũ — Cafe HR",
 };
 
 type WeekBucket = {
@@ -171,10 +171,10 @@ export default async function WellnessTrendsBoardPage({
       <div className="space-y-6">
         <header className="space-y-1">
           <Badge variant="outline" className="w-fit gap-1">
-            <Activity className="size-3" /> Xu hướng sức khỏe
+            <Activity className="size-3" /> Xu hướng vận hành
           </Badge>
           <h1 className="text-3xl font-bold tracking-tight">
-            Xu hướng sức khỏe đội ngũ
+            Xu hướng vận hành đội ngũ
           </h1>
         </header>
         <EmptyState
@@ -214,7 +214,7 @@ export default async function WellnessTrendsBoardPage({
               <Activity className="size-3" /> Bảng điều khiển quản trị
             </Badge>
             <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">
-              Xu hướng sức khỏe đội ngũ
+              Xu hướng vận hành đội ngũ
             </h1>
             <p className="max-w-xl text-sm text-foreground/80">
               {windowWeeks} tuần gần nhất — chỉ số tổng hợp từ giờ làm, kudos,

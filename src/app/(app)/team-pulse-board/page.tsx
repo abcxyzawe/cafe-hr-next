@@ -101,7 +101,7 @@ async function fetchTeamPulse(): Promise<FetchResult> {
       headers: { cookie },
     });
     if (!res.ok) {
-      return { ok: false, error: `Team Pulse API trả về HTTP ${res.status}` };
+      return { ok: false, error: `API vận hành trả về HTTP ${res.status}` };
     }
     const raw: unknown = await res.json();
     if (
@@ -134,9 +134,9 @@ function roleLabelVi(role: RoleKey): string {
 }
 
 function levelLabelVi(level: PulseLevel): string {
-  if (level === "high") return "Khỏe mạnh";
+  if (level === "high") return "Vận hành tốt";
   if (level === "medium") return "Ổn định";
-  return "Cần chú ý";
+  return "Cần can thiệp";
 }
 
 function levelPillClass(level: PulseLevel): string {
@@ -241,7 +241,7 @@ function PulseBar({
         aria-valuenow={Math.round(pct)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label="Pulse"
+        aria-label="Điểm vận hành"
       >
         <div
           className={cn("h-full transition-all", pulseBarColorClass(level))}
@@ -411,7 +411,7 @@ function RoleCard({ entry }: { entry: RoleEntry }): React.ReactElement {
 }
 
 export const metadata = {
-  title: "Sức khỏe đội ngũ — Cafe HR",
+  title: "Khả năng vận hành đội ngũ — Cafe HR",
 };
 
 export default async function TeamPulseBoardPage(): Promise<React.ReactElement> {
@@ -428,7 +428,7 @@ export default async function TeamPulseBoardPage(): Promise<React.ReactElement> 
           <div className="flex items-center gap-3">
             <Activity className="size-6 text-cyan-600 dark:text-cyan-300" />
             <h1 className="text-3xl font-bold tracking-tight">
-              Sức khỏe đội ngũ
+              Khả năng vận hành đội ngũ
             </h1>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -437,7 +437,7 @@ export default async function TeamPulseBoardPage(): Promise<React.ReactElement> 
         </header>
         <EmptyState
           icon={<ServerCrash style={{ width: 36, height: 36 }} />}
-          title="Không tải được dữ liệu pulse"
+          title="Không tải được dữ liệu vận hành"
           description={result.error}
           variant="card"
           size="lg"
@@ -458,10 +458,10 @@ export default async function TeamPulseBoardPage(): Promise<React.ReactElement> 
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 rounded-full border bg-card/60 px-3 py-1 text-xs font-medium backdrop-blur">
               <Activity className="size-3.5 text-cyan-600 dark:text-cyan-300" />
-              Bảng pulse đội ngũ
+              Bảng điểm vận hành
             </div>
             <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">
-              Sức khỏe đội ngũ
+              Khả năng vận hành đội ngũ
             </h1>
             <p className="text-sm text-muted-foreground">
               Cửa sổ phân tích: {windowDays} ngày gần nhất · Cập nhật{" "}
@@ -478,7 +478,7 @@ export default async function TeamPulseBoardPage(): Promise<React.ReactElement> 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-xl font-bold text-foreground">
-                Pulse toàn đội ngũ
+                Điểm vận hành toàn đội
               </h2>
               <span
                 className={cn(
@@ -525,7 +525,7 @@ export default async function TeamPulseBoardPage(): Promise<React.ReactElement> 
           <HealthScore score={overall.pulse} size="md" />
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Pulse tổng
+              Điểm vận hành
             </p>
             <p className="truncate text-2xl font-bold leading-tight tabular-nums">
               {overall.pulse}
@@ -551,7 +551,7 @@ export default async function TeamPulseBoardPage(): Promise<React.ReactElement> 
               {best ? roleLabelVi(best.role) : "—"}
             </p>
             <p className="truncate text-xs text-muted-foreground tabular-nums">
-              {best ? `Pulse ${best.pulse}/100` : "Chưa có dữ liệu"}
+              {best ? `Điểm ${best.pulse}/100` : "Chưa có dữ liệu"}
             </p>
           </div>
         </div>
@@ -568,7 +568,7 @@ export default async function TeamPulseBoardPage(): Promise<React.ReactElement> 
               {worst ? roleLabelVi(worst.role) : "—"}
             </p>
             <p className="truncate text-xs text-muted-foreground tabular-nums">
-              {worst ? `Pulse ${worst.pulse}/100` : "Chưa có dữ liệu"}
+              {worst ? `Điểm ${worst.pulse}/100` : "Chưa có dữ liệu"}
             </p>
           </div>
         </div>
@@ -619,7 +619,7 @@ export default async function TeamPulseBoardPage(): Promise<React.ReactElement> 
         <EmptyState
           icon={<Users style={{ width: 36, height: 36 }} />}
           title="Chưa có dữ liệu vai trò"
-          description="Hệ thống chưa ghi nhận nhóm nhân viên nào để tính pulse."
+          description="Hệ thống chưa ghi nhận nhóm nhân viên nào để tính điểm vận hành."
           variant="card"
         />
       ) : (
