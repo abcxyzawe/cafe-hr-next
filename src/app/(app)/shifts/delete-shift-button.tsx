@@ -5,7 +5,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { deleteShift } from "./actions";
 
-export function DeleteShiftButton({ id }: { id: number }) {
+export function DeleteShiftButton({
+  id,
+  onDeleted,
+}: {
+  id: number;
+  onDeleted?: (id: number) => void;
+}) {
   const [pending, startTransition] = useTransition();
   return (
     <Button
@@ -16,6 +22,7 @@ export function DeleteShiftButton({ id }: { id: number }) {
         startTransition(async () => {
           try {
             await deleteShift(id);
+            onDeleted?.(id);
             toast.success("Đã xoá ca");
           } catch (e) {
             toast.error(e instanceof Error ? e.message : "Không xoá được");

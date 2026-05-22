@@ -393,7 +393,14 @@ export function WeekGrid({
                                 {emp?.name ?? `#${s.employeeId}`}
                               </span>
                               <span className="opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
-                                <DeleteShiftButton id={s.id} />
+                                <DeleteShiftButton
+                                  id={s.id}
+                                  onDeleted={(id) =>
+                                    setShifts((prev) =>
+                                      prev.filter((x) => x.id !== id),
+                                    )
+                                  }
+                                />
                               </span>
                             </div>
                             <div className="pl-4">
